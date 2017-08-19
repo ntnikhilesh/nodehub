@@ -15,6 +15,11 @@ mongoose.connect(configDB.url);
 var bodyParser=require('body-parser');
 app.use(bodyParser.urlencoded({extended:false}));
 
+var passport=require('passport');
+var flash=require('connect-flash');
+require('./config/passport')(passport);
+
+
 app.set('view engine','ejs')//we can use jade engine as well
 
 app.use(morgan('dev')); //inveronment = dev
@@ -23,8 +28,12 @@ app.use(session({secret:'anustringoftext',
                 saveUninitialized:true,
                 resave:true}))
 
+//use passport after above session
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
-require('./app/routes.js')(app)
+require('./app/routes.js')(app,passport)
 //
 // app.use('/',function (req,res) {
 //     res.send('Our first express programme...')

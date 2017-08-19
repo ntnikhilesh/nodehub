@@ -18,13 +18,15 @@
   },
   "homepage": "https://github.com/ntnikhilesh/nodehub#readme",
   "dependencies": {
+    "body-parser": "latest",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "latest",
     "ejs": "latest",
     "express": "^4.15.4",
-    "morgan": "^1.8.2",
     "express-session": "latest",
-    "cookie-parser": "latest",
     "mongoose": "latest",
-    "ejs": "latest",
-    "body-parser": "latest"
+    "morgan": "^1.8.2",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
   }
 }
