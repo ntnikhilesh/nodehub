@@ -20,6 +20,8 @@
   "dependencies": {
     "ejs": "latest",
     "express": "^4.15.4",
-    "morgan": "^1.8.2"
+    "morgan": "^1.8.2",
+    "express-session": "latest",
+    "cookie-parser": "latest"
   }
 }

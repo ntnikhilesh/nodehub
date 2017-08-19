@@ -1,12 +1,23 @@
 var express=require('express');
 var app=express();
 var port=process.env.PORT || 8080;
-var morgan=require('morgan'); //middle ware
+var morgan=require('morgan'); //middle ware1
+
+var cookieParser=require('cookie-parser');  //middle ware2
+var session=require('express-session');  //middle ware3
 
 app.use(morgan('dev')); //inveronment = dev
+app.use(cookieParser());
+app.use(session({secret:'anustringoftext',
+                saveUninitialized:true,
+                resave:true}))
 
 app.use('/',function (req,res) {
     res.send('Our first express programme...')
+    console.log(req.cookies);
+    console.log("=======+++++================");
+    console.log(req.session);
+
 
 })
 
