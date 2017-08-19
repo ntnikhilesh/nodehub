@@ -6,20 +6,28 @@ var morgan=require('morgan'); //middle ware1
 var cookieParser=require('cookie-parser');  //middle ware2
 var session=require('express-session');  //middle ware3
 
+var mongoose=require('mongoose');
+
+var configDB=require('./config/database.js');
+mongoose.connect(configDB.url);
+
 app.use(morgan('dev')); //inveronment = dev
 app.use(cookieParser());
 app.use(session({secret:'anustringoftext',
                 saveUninitialized:true,
                 resave:true}))
 
-app.use('/',function (req,res) {
-    res.send('Our first express programme...')
-    console.log(req.cookies);
-    console.log("=======+++++================");
-    console.log(req.session);
 
-
-})
+require('./app/routes.js')(app)
+//
+// app.use('/',function (req,res) {
+//     res.send('Our first express programme...')
+//     console.log(req.cookies);
+//     console.log("=======+++++================");
+//     console.log(req.session);
+//
+//
+// })
 
 app.listen(port)
 
