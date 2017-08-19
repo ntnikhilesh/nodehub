@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/ntnikhilesh/nodehub#readme",
   "dependencies": {
+    "ejs": "latest",
     "express": "^4.15.4",
-    "ejs": "latest"
+    "morgan": "^1.8.2"
   }
 }
