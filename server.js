@@ -11,6 +11,12 @@ var mongoose=require('mongoose');
 var configDB=require('./config/database.js');
 mongoose.connect(configDB.url);
 
+//body parser
+var bodyParser=require('body-parser');
+app.use(bodyParser.urlencoded({extended:false}));
+
+app.set('view engine','ejs')//we can use jade engine as well
+
 app.use(morgan('dev')); //inveronment = dev
 app.use(cookieParser());
 app.use(session({secret:'anustringoftext',

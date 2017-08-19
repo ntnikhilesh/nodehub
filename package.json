@@ -23,6 +23,8 @@
     "morgan": "^1.8.2",
     "express-session": "latest",
     "cookie-parser": "latest",
-    "mongoose": "latest"
+    "mongoose": "latest",
+    "ejs": "latest",
+    "body-parser": "latest"
   }
 }
