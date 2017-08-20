@@ -32,7 +32,8 @@ module.exports=function (passport) {
                         return done(err)
                     if(user) {
                         return done(null, false, req.flash('signupMessage', 'Email alerady exist'))
-                    }else {
+                    }
+                    if(!req.user){
                         var newUser=new User();
                         newUser.local.username=email;
                         newUser.local.password=newUser.generateHash(password);
@@ -40,6 +41,15 @@ module.exports=function (passport) {
                             if(err)
                                 throw err;
                             return done(null,newUser)
+                        })
+                    }else {
+                        var user=req.user;
+                        user.local.username=email;
+                        user.local.password=user.generateHash(password);
+                        user.save(function (err) {
+                            if(err)
+                                throw err;
+                            return done(null,user)
                         })
                     }
                 })
@@ -72,29 +82,52 @@ module.exports=function (passport) {
     passport.use(new facebookStrategy({
             clientID: configAuth.facebookAuth.clientId,
             clientSecret: configAuth.facebookAuth.clentSecret,
-            callbackURL: configAuth.facebookAuth.callbackURL
+            callbackURL: configAuth.facebookAuth.callbackURL,
+            passReqToCallback:true
         },
-        function(accessToken, refreshToken, profile, done) {
-           process.nextTick(function () {
-               User.findOne({'facebook.id':profile.id},function (err,user) {
-                   if(err)
-                       return done(err);
-                   if(user)
-                       return done(null,user);
-                   else
-                       var newUser=new User();
-                   newUser.facebook.id=profile.id;
-                   newUser.facebook.token=accessToken;
-                   console.log(profile)
-                   newUser.facebook.name=profile.displayName;
-                   //newUser.facebook.email=profile.emails[0].value;
+        //this will execute after successful login from FB
+        function(req,accessToken, refreshToken, profile, done) {
+        console.log('req=====',req)
 
-                   newUser.save(function (err) {
-                       if(err)
-                           throw err
-                       return done(null,newUser);
-                   })
-               })
+           process.nextTick(function () {
+               //user is not logged in yet with any account(local or google)
+                if(!req.user)
+                {
+                    User.findOne({'facebook.id':profile.id},function (err,user) {
+                        if(err)
+                            return done(err);
+                        if(user)
+                            return done(null,user);
+                        else
+                            var newUser=new User();
+                        newUser.facebook.id=profile.id;
+                        newUser.facebook.token=accessToken;
+                        console.log(profile)
+                        newUser.facebook.name=profile.displayName;
+                        //newUser.facebook.email=profile.emails[0].value;
+
+                        newUser.save(function (err) {
+                            if(err)
+                                throw err
+                            return done(null,newUser);
+                        })
+                    })
+                }
+
+               //user is logged in already, and needs to be merged
+               else {
+                    var user=req.user;
+                    user.facebook.id=profile.id;
+                    user.facebook.token=accessToken;
+                    user.facebook.name=profile.displayName;
+
+                    user.save(function (err) {
+                        if(err)
+                            throw err
+                        return done(null,user)
+                    })
+                }
+
            })
         }
     ));
@@ -105,29 +138,46 @@ module.exports=function (passport) {
     passport.use(new googleStrategy({
             clientID: configAuth.googleAuth.clientId,
             clientSecret: configAuth.googleAuth.clentSecret,
-            callbackURL: configAuth.googleAuth.callbackURL
+            callbackURL: configAuth.googleAuth.callbackURL,
+            passReqToCallback:true
         },
-        function(accessToken, refreshToken, profile, done) {
+        function(req,accessToken, refreshToken, profile, done) {
             process.nextTick(function () {
-                User.findOne({'google.id':profile.id},function (err,user) {
-                    if(err)
-                        return done(err);
-                    if(user)
-                        return done(null,user);
-                    else
-                        var newUser=new User();
-                    newUser.google.id=profile.id;
-                    newUser.google.token=accessToken;
+                if(!req.user){
+                    User.findOne({'google.id':profile.id},function (err,user) {
+                        if(err)
+                            return done(err);
+                        if(user)
+                            return done(null,user);
+                        else
+                            var newUser=new User();
+                        newUser.google.id=profile.id;
+                        newUser.google.token=accessToken;
+                        console.log(profile)
+                        newUser.google.name=profile.displayName;
+                        //newUser.facebook.email=profile.emails[0].value;
+
+                        newUser.save(function (err) {
+                            if(err)
+                                throw err
+                            return done(null,newUser);
+                        })
+                    })
+                }else {
+                    var user=req.user;
+                    user.google.id=profile.id;
+                    user.google.token=accessToken;
                     console.log(profile)
-                    newUser.google.name=profile.displayName;
+                    user.google.name=profile.displayName;
                     //newUser.facebook.email=profile.emails[0].value;
 
-                    newUser.save(function (err) {
+                    user.save(function (err) {
                         if(err)
-                            throw err
-                        return done(null,newUser);
+                            throw err;
+                        return done(null,user)
                     })
-                })
+                }
+
             })
         }
     ));
