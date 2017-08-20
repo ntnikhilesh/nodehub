@@ -3,6 +3,8 @@ var localStrategy=require('passport-local').Strategy;
 var User=require('../app/models/user')
 
 module.exports=function (passport) {
+    //it helps to redirect logedin user to home page
+
     passport.serializeUser(function (user,done) {
         done(null,user.id);
     })
@@ -29,7 +31,6 @@ module.exports=function (passport) {
                         var newUser=new User();
                         newUser.local.username=email;
                         newUser.local.password=password;
-
                         newUser.save(function (err) {
                             if(err)
                                 throw err;
@@ -40,4 +41,23 @@ module.exports=function (passport) {
             })
         }))
 
+    
+    passport.use('local-login',new localStrategy({
+        usernameField:'email',
+        passwordField:'password',
+        passReqToCallback: true
+    },
+        function (req,email,password,done) {
+            process.nextTick(function () {
+                User.findOne({'local.username':email},function (err,user) {
+                    if(err)
+                        return done(err)
+                    if(!user)
+                        return done(null,false,req.flash('loginMessage','No user found'))
+                    if(user.local.password!=password)
+                        return done(null,false,req.flash('loginMesssage','Invalid user'))
+                    return done(null,user)
+                })
+            })
+        }))
 }
