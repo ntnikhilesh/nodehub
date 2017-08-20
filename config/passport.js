@@ -2,6 +2,7 @@ var localStrategy=require('passport-local').Strategy;
 
 var facebookStrategy=require('passport-facebook').Strategy;
 
+var googleStrategy=require('passport-google-oauth').OAuth2Strategy;
 var User=require('../app/models/user')
 
 var configAuth=require('./auth')
@@ -66,6 +67,7 @@ module.exports=function (passport) {
         }))
 
 
+    //Fb strategy
 
     passport.use(new facebookStrategy({
             clientID: configAuth.facebookAuth.clientId,
@@ -94,6 +96,39 @@ module.exports=function (passport) {
                    })
                })
            })
+        }
+    ));
+
+
+    //Google strategy
+
+    passport.use(new googleStrategy({
+            clientID: configAuth.googleAuth.clientId,
+            clientSecret: configAuth.googleAuth.clentSecret,
+            callbackURL: configAuth.googleAuth.callbackURL
+        },
+        function(accessToken, refreshToken, profile, done) {
+            process.nextTick(function () {
+                User.findOne({'google.id':profile.id},function (err,user) {
+                    if(err)
+                        return done(err);
+                    if(user)
+                        return done(null,user);
+                    else
+                        var newUser=new User();
+                    newUser.google.id=profile.id;
+                    newUser.google.token=accessToken;
+                    console.log(profile)
+                    newUser.google.name=profile.displayName;
+                    //newUser.facebook.email=profile.emails[0].value;
+
+                    newUser.save(function (err) {
+                        if(err)
+                            throw err
+                        return done(null,newUser);
+                    })
+                })
+            })
         }
     ));
 }
