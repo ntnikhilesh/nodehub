@@ -8,6 +8,8 @@ var session=require('express-session');  //middle ware3
 
 var mongoose=require('mongoose');
 
+const MongoStore = require('connect-mongo')(session);
+
 var configDB=require('./config/database.js');
 mongoose.connect(configDB.url);
 
@@ -24,9 +26,15 @@ app.set('view engine','ejs')//we can use jade engine as well
 
 app.use(morgan('dev')); //inveronment = dev
 app.use(cookieParser());
-app.use(session({secret:'anustringoftext',
-                saveUninitialized:true,
-                resave:true}))
+app.use(session({
+    secret:'anustringoftext',
+    saveUninitialized:true,
+    resave:true,
+    store:new MongoStore({
+        mongooseConnection:mongoose.connection,
+        ttl:2 * 24 * 60 * 60 // = 2 days. Default
+    })
+}))
 
 //use passport after above session
 app.use(passport.initialize());
