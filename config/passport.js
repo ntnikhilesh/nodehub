@@ -1,6 +1,10 @@
 var localStrategy=require('passport-local').Strategy;
 
+var facebookStrategy=require('passport-facebook').Strategy;
+
 var User=require('../app/models/user')
+
+var configAuth=require('./auth')
 
 module.exports=function (passport) {
     //it helps to redirect logedin user to home page
@@ -60,4 +64,36 @@ module.exports=function (passport) {
                 })
             })
         }))
+
+
+
+    passport.use(new facebookStrategy({
+            clientID: configAuth.facebookAuth.clientId,
+            clientSecret: configAuth.facebookAuth.clentSecret,
+            callbackURL: configAuth.facebookAuth.callbackURL
+        },
+        function(accessToken, refreshToken, profile, done) {
+           process.nextTick(function () {
+               User.findOne({'facebook.id':profile.id},function (err,user) {
+                   if(err)
+                       return done(err);
+                   if(user)
+                       return done(null,user);
+                   else
+                       var newUser=new User();
+                   newUser.facebook.id=profile.id;
+                   newUser.facebook.token=accessToken;
+                   console.log(profile)
+                   newUser.facebook.name=profile.displayName;
+                   //newUser.facebook.email=profile.emails[0].value;
+
+                   newUser.save(function (err) {
+                       if(err)
+                           throw err
+                       return done(null,newUser);
+                   })
+               })
+           })
+        }
+    ));
 }
